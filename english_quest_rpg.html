@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Quest RPG: The Academy of Magic Words</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Pixel Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Pixel Art Aesthetic CSS */
+        :root {
+            --bg-dark: #1e1b4b;
+            --purple-main: #6d28d9;
+            --pink-accent: #ec4899;
+            --cyan-accent: #06b6d4;
+            --gold-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        /* Custom Pixel Borders */
+        .pixel-box {
+            border: 4px solid #312e81;
+            box-shadow: inset -4px -4px 0px 0px #1e1b4b, 4px 4px 0px 0px #000;
+            background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%);
+        }
+
+        .pixel-card {
+            border: 3px solid #818cf8;
+            box-shadow: 0 8px 0 #312e81, 0 8px 15px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+        }
+
+        .pixel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #312e81, 0 12px 20px rgba(0,0,0,0.6);
+        }
+
+        .pixel-btn {
+            border: 3px solid #f472b6;
+            background: linear-gradient(180deg, #ec4899 0%, #be185d 100%);
+            box-shadow: 0 5px 0 #831843;
+            text-shadow: 1px 1px 0px #000;
+            transition: all 0.1s ease;
+        }
+
+        .pixel-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #831843;
+        }
+
+        .pixel-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #831843;
+        }
+
+        .pixel-btn-cyan {
+            border: 3px solid #67e8f9;
+            background: linear-gradient(180deg, #06b6d4 0%, #0e7490 100%);
+            box-shadow: 0 5px 0 #164e63;
+        }
+        .pixel-btn-cyan:hover { box-shadow: 0 7px 0 #164e63; }
+        .pixel-btn-cyan:active { box-shadow: 0 2px 0 #164e63; }
+
+        .pixel-btn-gold {
+            border: 3px solid #fde047;
+            background: linear-gradient(180deg, #eab308 0%, #a16207 100%);
+            box-shadow: 0 5px 0 #713f12;
+            color: #fff;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(236,72,153,0.6)); }
+            50% { filter: drop-shadow(0 0 15px rgba(236,72,153,0.9)); }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* Confetti particles */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: pop 0.8s ease-out forwards;
+        }
+
+        @keyframes pop {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+
+        /* Inputs deben poder escribirse (Safari) */
+        input { user-select: text; -webkit-user-select: text; }
+        .avatar-opt.selected { border-color: #f472b6; background: rgba(190,24,93,0.35); }
+        .opt-correct { border-color: #34d399 !important; background: rgba(6,78,59,0.8) !important; }
+        .opt-wrong { border-color: #f87171 !important; background: rgba(127,29,29,0.8) !important; opacity: .7; }
+        #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 100;
+                 background: #1e1b4b; border: 2px solid #ec4899; color: #fff; padding: 10px 16px;
+                 border-radius: 12px; font-size: 13px; font-weight: 600; max-width: 90vw; text-align: center; }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1b4b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ec4899;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 overflow-x-hidden">
+
+    <!-- TOP RPG HUD / BARRA DE ESTADO -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b-4 border-indigo-900 p-2 sm:p-4">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            
+            <!-- Avatar & Profile Info -->
+            <div class="flex items-center gap-3">
+                <div id="hud-avatar" class="w-12 h-12 bg-indigo-950 rounded-xl border-2 border-pink-500 flex items-center justify-center text-2xl shadow-lg relative cursor-pointer" onclick="openAvatarSelector()">
+                    <span id="hud-avatar-icon">🧙‍♀️</span>
+                    <span class="absolute -bottom-1 -right-1 text-[9px] bg-pink-600 px-1 rounded pixel-font text-white">Lvl <span id="player-lvl">1</span></span>
+                </div>
+                <div>
+                    <h2 id="player-name" class="font-bold text-sm sm:text-base text-pink-400 pixel-font">Heroine</h2>
+                    <!-- XP Bar -->
+                    <div class="w-28 sm:w-40 bg-slate-800 rounded-full h-3 border border-indigo-500 relative overflow-hidden mt-1">
+                        <div id="xp-bar" class="bg-gradient-to-r from-pink-500 to-purple-500 h-full transition-all duration-300" style="width: 0%"></div>
+                        <span id="xp-text" class="absolute inset-0 text-[8px] flex items-center justify-center font-bold text-white pixel-font">0 / 100 XP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Hearts & Coins -->
+            <div class="flex items-center gap-4 bg-slate-950/80 px-4 py-2 rounded-xl border border-indigo-900">
+                <!-- Lives -->
+                <div class="flex items-center gap-1" id="hearts-container">
+                    <i class="fa-solid fa-heart text-red-500 text-lg sm:text-xl animate-pulse"></i>
+                    <i class="fa-solid fa-heart text-red-500 text-lg sm:text-xl animate-pulse"></i>
+                    <i class="fa-solid fa-heart text-red-500 text-lg sm:text-xl animate-pulse"></i>
+                </div>
+                <!-- Stars / Score -->
+                <div class="flex items-center gap-1 text-yellow-400 font-bold pixel-font text-xs sm:text-sm">
+                    <i class="fa-solid fa-star text-lg"></i>
+                    <span id="score-val">0</span>
+                </div>
+            </div>
+
+            <!-- Quest Navigator Quick Button -->
+            <button onclick="showScreen('map-screen')" class="pixel-btn-cyan px-3 py-2 rounded-lg text-xs pixel-font flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot"></i> <span class="hidden sm:inline">Mapa</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN GAME CONTAINER -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 flex flex-col justify-center">
+
+        <!-- ================= 1. CHARACTER SELECTOR & START SCREEN ================= -->
+        <section id="start-screen" class="space-y-6 text-center my-auto py-8">
+            <div class="inline-block animate-float">
+                <span class="px-4 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500 text-xs pixel-font uppercase tracking-widest">
+                    ✨ RPG Educational Adventure ✨
+                </span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-5xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-cyan-400 drop-shadow-lg pixel-font">
+                ENGLISH QUEST
+            </h1>
+            <p class="text-slate-300 max-w-xl mx-auto text-sm sm:text-base">
+                ¡Bienvenida, joven maga del idioma! Un portal mágico se ha abierto. Aprende hechizos en inglés (Modales, Tiempos, Clima y Vocabulario) para derrotar la oscuridad.
+            </p>
+
+            <!-- Avatar Selection Box -->
+            <div class="pixel-box p-6 rounded-2xl max-w-md mx-auto space-y-4">
+                <h3 class="pixel-font text-xs text-yellow-400">ELIGE TU HEROÍNA</h3>
+                <div class="grid grid-cols-4 gap-3">
+                    <button onclick="selectAvatar('🧙‍♀️', 'Maga Estelar', this)" class="avatar-opt bg-indigo-900/60 p-3 rounded-xl border-2 border-indigo-500 hover:border-pink-400 text-3xl transition">🧙‍♀️</button>
+                    <button onclick="selectAvatar('🧝‍♀️', 'Elfa de los Bosques', this)" class="avatar-opt bg-indigo-900/60 p-3 rounded-xl border-2 border-indigo-500 hover:border-pink-400 text-3xl transition">🧝‍♀️</button>
+                    <button onclick="selectAvatar('🦸‍♀️', 'Super Guía', this)" class="avatar-opt bg-indigo-900/60 p-3 rounded-xl border-2 border-indigo-500 hover:border-pink-400 text-3xl transition">🦸‍♀️</button>
+                    <button onclick="selectAvatar('👑', 'Princesa Sabia', this)" class="avatar-opt bg-indigo-900/60 p-3 rounded-xl border-2 border-indigo-500 hover:border-pink-400 text-3xl transition">👑</button>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <label class="block text-xs font-semibold text-slate-300">Tu Nombre de Aventurera:</label>
+                    <input type="text" id="name-input" value="Luna" maxlength="12" class="w-full bg-slate-900 border-2 border-purple-500 rounded-lg px-3 py-2 text-center text-pink-300 font-bold focus:outline-none focus:border-cyan-400 pixel-font text-sm">
+                </div>
+
+                <button onclick="startGame()" class="pixel-btn w-full py-3 rounded-xl font-bold text-white pixel-font text-sm mt-4 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> INICIAR AVENTURA
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= 2. WORLD MAP / LESSON SELECTOR ================= -->
+        <section id="map-screen" class="hidden space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl sm:text-3xl font-bold pixel-font text-pink-400">MAPA DEL REINO GRAMATICAL</h2>
+                <p class="text-xs sm:text-sm text-slate-300">Selecciona un territorio para dominar sus secretos en inglés.</p>
+            </div>
+
+            <!-- Map Nodes Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- Zone 1: Modal Verbs -->
+                <div class="pixel-card bg-slate-900 p-5 rounded-2xl flex flex-col justify-between border-t-4 border-purple-500">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-3xl">🔮</span>
+                            <span id="badge-1" class="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700 font-mono">🔒 Bloqueado</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-purple-300">1. Bosque de los Modal Verbs</h3>
+                        <p class="text-xs text-slate-400 mt-1">Aprende a expresar habilidades, consejos, reglas y permisos con <b>Can, Could, Must, Should, May</b>.</p>
+                    </div>
+                    <button onclick="startLesson(1)" class="pixel-btn-cyan w-full py-2.5 rounded-xl font-bold text-xs pixel-font mt-4">
+                        ENTRAR AL BOSQUE
+                    </button>
+                </div>
+
+                <!-- Zone 2: Present Simple -->
+                <div class="pixel-card bg-slate-900 p-5 rounded-2xl flex flex-col justify-between border-t-4 border-pink-500">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-3xl">☀️</span>
+                            <span id="badge-2" class="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700 font-mono">🔒 Bloqueado</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-pink-300">2. Ciudad de las Rutinas (Present Simple)</h3>
+                        <p class="text-xs text-slate-400 mt-1">Domina hábitos diarios, gustos y la misteriosa "S" en la tercera persona (He, She, It).</p>
+                    </div>
+                    <button onclick="startLesson(2)" class="pixel-btn-cyan w-full py-2.5 rounded-xl font-bold text-xs pixel-font mt-4">
+                        VISITAR CIUDAD
+                    </button>
+                </div>
+
+                <!-- Zone 3: Past Simple -->
+                <div class="pixel-card bg-slate-900 p-5 rounded-2xl flex flex-col justify-between border-t-4 border-cyan-500">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-3xl">⏳</span>
+                            <span id="badge-3" class="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700 font-mono">🔒 Bloqueado</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-cyan-300">3. Templo del Tiempo (Past Simple)</h3>
+                        <p class="text-xs text-slate-400 mt-1">Viaja al pasado. Descubre verbos regulares (-ed) e irregulares para contar aventuras pasadas.</p>
+                    </div>
+                    <button onclick="startLesson(3)" class="pixel-btn-cyan w-full py-2.5 rounded-xl font-bold text-xs pixel-font mt-4">
+                        VIAJAR AL PASADO
+                    </button>
+                </div>
+
+                <!-- Zone 4: Natural Features & Accommodation -->
+                <div class="pixel-card bg-slate-900 p-5 rounded-2xl flex flex-col justify-between border-t-4 border-emerald-500">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-3xl">🏔️</span>
+                            <span id="badge-4" class="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700 font-mono">🔒 Bloqueado</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-emerald-300">4. Valle de la Naturaleza y Hoteles</h3>
+                        <p class="text-xs text-slate-400 mt-1">Vocabulario de paisajes (Mountain, River, Lake) y alojamiento (Hotel, Cabin, Campsite).</p>
+                    </div>
+                    <button onclick="startLesson(4)" class="pixel-btn-cyan w-full py-2.5 rounded-xl font-bold text-xs pixel-font mt-4">
+                        EXPLORAR VALLE
+                    </button>
+                </div>
+
+                <!-- Zone 5: Weather -->
+                <div class="pixel-card bg-slate-900 p-5 rounded-2xl flex flex-col justify-between border-t-4 border-yellow-500">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-3xl">⛈️</span>
+                            <span id="badge-5" class="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700 font-mono">🔒 Bloqueado</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-yellow-300">5. Torre del Clima (Weather)</h3>
+                        <p class="text-xs text-slate-400 mt-1">Pronostica el tiempo: Sunny, Rainy, Snowy, Windy, Hot, Cold y Stormy.</p>
+                    </div>
+                    <button onclick="startLesson(5)" class="pixel-btn-cyan w-full py-2.5 rounded-xl font-bold text-xs pixel-font mt-4">
+                        SUBIR A LA TORRE
+                    </button>
+                </div>
+
+                <!-- Zone 6: Final Boss Fight -->
+                <div class="pixel-card bg-gradient-to-b from-slate-900 to-red-950 p-5 rounded-2xl flex flex-col justify-between border-t-4 border-red-500 relative overflow-hidden">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-3xl animate-bounce">🐉</span>
+                            <span class="text-xs bg-red-900/80 text-red-200 px-2 py-1 rounded border border-red-500 font-mono font-bold">DESAFÍO FINAL</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-red-400">6. Castillo del Dragón del Olvido</h3>
+                        <p class="text-xs text-slate-300 mt-1">Aplica todo lo aprendido para derrotar al gran dragón gramatical en un combate definitivo.</p>
+                    </div>
+                    <button onclick="startBossFight()" class="pixel-btn w-full py-2.5 rounded-xl font-bold text-xs pixel-font mt-4 bg-gradient-to-r from-red-600 to-pink-600">
+                        ⚡ BATALLA FINAL
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 3. LESSON CARD & TUTORIAL OVERLAY ================= -->
+        <section id="lesson-theory-screen" class="hidden space-y-6">
+            <div class="pixel-box p-6 rounded-2xl max-w-3xl mx-auto relative">
+                <!-- Header -->
+                <div class="flex items-center gap-3 border-b border-indigo-800 pb-4 mb-4">
+                    <span id="lesson-icon" class="text-4xl">🔮</span>
+                    <div>
+                        <h2 id="lesson-title" class="text-xl sm:text-2xl font-bold text-pink-400">Título de la Lección</h2>
+                        <p id="lesson-subtitle" class="text-xs text-cyan-300">Aprende la regla antes de jugar</p>
+                    </div>
+                </div>
+
+                <!-- Scrollable Theory Content -->
+                <div id="lesson-body" class="space-y-4 text-sm leading-relaxed text-slate-200 max-h-96 overflow-y-auto pr-2">
+                    <!-- Dynamic HTML content injected via JS -->
+                </div>
+
+                <!-- Start Activity Button -->
+                <div class="pt-6 border-t border-indigo-800 flex justify-between items-center">
+                    <button onclick="showScreen('map-screen')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-300 transition">
+                        <i class="fa-solid fa-arrow-left"></i> Volver al Mapa
+                    </button>
+                    <button onclick="launchInteractiveChallenge()" class="pixel-btn-gold px-6 py-3 rounded-xl font-bold text-xs pixel-font flex items-center gap-2">
+                        ¡EMPEZAR DESAFÍO! <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 4. INTERACTIVE QUIZ / GAMEPLAY AREA ================= -->
+        <section id="challenge-screen" class="hidden space-y-6">
+            <div class="pixel-box p-6 rounded-2xl max-w-2xl mx-auto relative">
+                
+                <!-- Challenge Header & Progress -->
+                <div class="flex justify-between items-center mb-6 border-b border-indigo-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span id="challenge-topic-icon" class="text-2xl">🔮</span>
+                        <span id="challenge-topic-name" class="pixel-font text-xs text-pink-300">Desafío</span>
+                    </div>
+                    <span id="question-tracker" class="text-xs bg-indigo-950 px-3 py-1 rounded-full border border-indigo-700 font-bold text-cyan-300">Pregunta 1/5</span>
+                </div>
+
+                <!-- Dynamic Challenge Container -->
+                <div id="challenge-content-area" class="space-y-6">
+                    <!-- Dynamic Question UI (Multiple choice, Word Builder, Matching, etc.) -->
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="feedback-banner" class="hidden mt-4 p-4 rounded-xl border-2 text-center text-sm font-bold animate-bounce">
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= 5. BOSS BATTLE SCREEN ================= -->
+        <section id="boss-screen" class="hidden space-y-6">
+            <div class="pixel-box p-6 rounded-2xl max-w-3xl mx-auto bg-gradient-to-b from-slate-950 to-purple-950 border-red-600">
+                
+                <!-- Boss Health & Avatar HUD -->
+                <div class="grid grid-cols-2 gap-4 items-center mb-6 bg-slate-900/90 p-4 rounded-xl border border-red-900">
+                    <!-- Hero Side -->
+                    <div class="flex items-center gap-3">
+                        <div id="boss-hero-avatar" class="text-4xl animate-bounce">🧙‍♀️</div>
+                        <div>
+                            <div class="font-bold text-sm text-pink-400" id="boss-hero-name">Luna</div>
+                            <div class="w-24 sm:w-32 bg-slate-950 h-3 rounded-full border border-pink-500 overflow-hidden mt-1">
+                                <div id="hero-hp-bar" class="bg-pink-500 h-full transition-all" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Boss Side -->
+                    <div class="flex items-center justify-end gap-3 text-right">
+                        <div>
+                            <div class="font-bold text-sm text-red-400">Dragón del Olvido</div>
+                            <div class="w-24 sm:w-32 bg-slate-950 h-3 rounded-full border border-red-500 overflow-hidden mt-1 ml-auto">
+                                <div id="boss-hp-bar" class="bg-red-600 h-full transition-all" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="text-5xl animate-float">🐉</div>
+                    </div>
+                </div>
+
+                <!-- Boss Question Box -->
+                <div class="bg-slate-900 p-5 rounded-xl border-2 border-purple-500 text-center space-y-4">
+                    <p class="text-xs text-yellow-400 pixel-font">¡EL DRAGÓN LANZA UN ATAQUE DE PREGUNTAS!</p>
+                    <h3 id="boss-question-text" class="text-base sm:text-lg font-bold text-white">...</h3>
+                    
+                    <div id="boss-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <!-- Options injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 6. REWARD / VICTORY MODAL ================= -->
+        <section id="victory-screen" class="hidden text-center space-y-6 my-auto py-8">
+            <div class="pixel-box p-8 rounded-2xl max-w-lg mx-auto space-y-6">
+                <div class="text-6xl animate-bounce">🏆</div>
+                <h2 class="text-2xl sm:text-4xl font-black text-yellow-400 pixel-font">¡VICTORIA MÁGICA!</h2>
+                <p id="victory-message" class="text-sm text-slate-200">
+                    ¡Has completado este desafío con éxito y ganado XP!
+                </p>
+
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-indigo-800 flex justify-around items-center">
+                    <div>
+                        <div class="text-xs text-slate-400">XP Ganado</div>
+                        <div id="earned-xp" class="text-xl font-bold text-pink-400 pixel-font">+50 XP</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400">Medalla</div>
+                        <div id="earned-badge" class="text-2xl">🎖️</div>
+                    </div>
+                </div>
+
+                <button onclick="showScreen('map-screen')" class="pixel-btn-gold w-full py-3 rounded-xl font-bold text-xs pixel-font">
+                    CONTINUAR EN EL MAPA
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-900">
+        English Quest RPG &copy; 2026 — Plataforma Educativa Interactiva de Inglés
+    </footer>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+    /* ==========================================================================
+       UTILIDADES
+       ========================================================================== */
+    function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function escapeHTML(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+        let t = document.getElementById('toast');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'toast';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.style.display = 'block';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    // Un solo temporizador pendiente; se cancela al cambiar de pantalla
+    let pendingTimer = null;
+    function later(fn, ms) {
+        clearTimeout(pendingTimer);
+        pendingTimer = setTimeout(fn, ms);
+    }
+
+    /* ==========================================================================
+       AUDIO (Web Audio API) - se crea al primer uso (política de autoplay)
+       ========================================================================== */
+    let audioCtx = null;
+    function getAudio() {
+        if (!audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return null;
+            audioCtx = new Ctx();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+    }
+
+    function playSound(type) {
+        let ctx;
+        try { ctx = getAudio(); } catch (e) { return; }
+        if (!ctx) return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+
+        if (type === 'click') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'correct') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.08);
+            osc.frequency.setValueAtTime(783.99, now + 0.16);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.setValueAtTime(140, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.25);
+            osc.start(now); osc.stop(now + 0.25);
+        } else if (type === 'win') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.1);
+            osc.frequency.setValueAtTime(783.99, now + 0.2);
+            osc.frequency.setValueAtTime(1046.50, now + 0.3);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
+        }
+    }
+
+    /* ==========================================================================
+       ESTADO DEL JUEGO Y DATOS
+       ========================================================================== */
+    const gameState = {
+        playerName: 'Luna',
+        playerAvatar: '🧙‍♀️',
+        level: 1,
+        xp: 0,
+        xpToNext: 100,
+        lives: 3,
+        score: 0,
+        unlockedLessons: [1],
+        completedLessons: [],
+        currentLessonId: null,
+        currentQuestionIdx: 0,
+        bossHp: 100,
+        heroHp: 100
+    };
+
+    // CONTENIDO DE LECCIONES
+    const lessonsData = {
+            1: {
+                title: "Modal Verbs",
+                icon: "🔮",
+                subtitle: "Verbos auxiliares para habilidades, consejos y reglas",
+                theoryHTML: `
+                    <p class="mb-2">Los <b>Modal Verbs</b> son palabras mágicas que ayudan a otros verbos a expresar diferentes ideas. ¡Nunca cambian y no llevan "s"!</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3">
+                        <div class="bg-indigo-950 p-3 rounded-lg border border-purple-500">
+                            <span class="text-pink-400 font-bold">✨ CAN (Poder):</span>
+                            <p class="text-xs text-slate-300 mt-1">Para habilidades actuales o permisos.</p>
+                            <p class="text-xs text-yellow-300 italic">Ej: "I can fly!" (Puedo volar)</p>
+                        </div>
+                        <div class="bg-indigo-950 p-3 rounded-lg border border-purple-500">
+                            <span class="text-pink-400 font-bold">🌙 COULD (Podía / Podría):</span>
+                            <p class="text-xs text-slate-300 mt-1">Para habilidades en el pasado o peticiones amables.</p>
+                            <p class="text-xs text-yellow-300 italic">Ej: "Could you help me?"</p>
+                        </div>
+                        <div class="bg-indigo-950 p-3 rounded-lg border border-purple-500">
+                            <span class="text-pink-400 font-bold">⚠️ MUST (Deber / Obligación):</span>
+                            <p class="text-xs text-slate-300 mt-1">Reglas importantes o cosas obligatorias.</p>
+                            <p class="text-xs text-yellow-300 italic">Ej: "You must study for the spell test."</p>
+                        </div>
+                        <div class="bg-indigo-950 p-3 rounded-lg border border-purple-500">
+                            <span class="text-pink-400 font-bold">💡 SHOULD (Deberías / Consejo):</span>
+                            <p class="text-xs text-slate-300 mt-1">Para dar un buen consejo a un amigo.</p>
+                            <p class="text-xs text-yellow-300 italic">Ej: "You should drink water."</p>
+                        </div>
+                <div class="bg-indigo-950 p-3 rounded-lg border border-purple-500">
+                    <span class="text-pink-400 font-bold">🙏 MAY (Permiso formal):</span>
+                    <p class="text-xs text-slate-300 mt-1">Para pedir permiso con mucha educación. <b>Must not</b> = prohibido.</p>
+                    <p class="text-xs text-yellow-300 italic">Ej: "May I come in?"</p>
+                </div>
+                    </div>
+                    <p class="text-xs text-cyan-300 bg-slate-900 p-2 rounded border border-cyan-800">
+                        <b>Fórmula Mágica:</b> Sujeto + Modal Verb + Verbo en forma básica. <br>
+                        <i>Ejemplo: She <u>can</u> speak English.</i>
+                    </p>
+                `,
+                questions: [
+                    { q: "She ___ swim very fast! She is the champion.", options: ["can", "must", "should"], answer: "can" },
+                    { q: "You look tired. You ___ go to sleep early.", options: ["can", "should", "must not"], answer: "should" },
+                    { q: "Stop! You ___ touch the dragon's egg! It is dangerous.", options: ["must not", "can", "should"], answer: "must not" },
+                    { q: "When I was 5, I ___ speak two languages.", options: ["could", "must", "should"], answer: "could" },
+                    { q: "___ I open the magic window, please?", options: ["May", "Must", "Should"], answer: "May" }
+                ]
+            },
+            2: {
+                title: "Present Simple",
+                icon: "☀️",
+                subtitle: "Expresa rutinas, gustos y hábitos diarios",
+                theoryHTML: `
+                    <p class="mb-2">El <b>Present Simple</b> se usa para hablar de cosas que haces todos los días o verdades universales.</p>
+                    <div class="bg-indigo-950 p-3 rounded-lg border border-pink-500 mb-3">
+                        <h4 class="font-bold text-pink-300 text-sm">⭐ La Regla Dorada de la "S":</h4>
+                        <p class="text-xs text-slate-300 mt-1">Cuando hablas de <b>HE (Él), SHE (Ella) o IT (Eso)</b>, ¡debes agregar una <b>-s</b> o <b>-es</b> al verbo!</p>
+                        <ul class="text-xs text-yellow-300 list-disc list-inside mt-2">
+                            <li>I play ➔ <b>She plays</b></li>
+                            <li>We watch ➔ <b>He watches</b></li>
+                            <li>They go ➔ <b>It goes</b></li>
+                        </ul>
+                    </div>
+                    <div class="bg-indigo-950 p-3 rounded-lg border border-pink-500">
+                        <h4 class="font-bold text-cyan-300 text-sm">❓ Preguntas y Negativos:</h4>
+                        <p class="text-xs text-slate-300 mt-1">Usamos <b>DO / DON'T</b> para I, You, We, They. Usamos <b>DOES / DOESN'T</b> para He, She, It.</p>
+                    </div>
+                `,
+                questions: [
+                    { q: "Luna ___ (read) magic books every afternoon.", options: ["reads", "read", "reading"], answer: "reads" },
+                    { q: "They ___ (not like) dark dungeons.", options: ["don't like", "doesn't like", "not like"], answer: "don't like" },
+                    { q: "___ he practice spells every day?", options: ["Does", "Do", "Is"], answer: "Does" },
+                    { q: "My cat ___ (sleep) on my wizard hat.", options: ["sleeps", "sleep", "sleeping"], answer: "sleeps" },
+                    { q: "We ___ (live) in a beautiful enchanted castle.", options: ["live", "lives", "living"], answer: "live" }
+                ]
+            },
+            3: {
+                title: "Past Simple",
+                icon: "⏳",
+                subtitle: "Viaja en el tiempo y cuenta historias pasadas",
+                theoryHTML: `
+                    <p class="mb-2">Usamos el <b>Past Simple</b> para acciones que ya terminaron. Busca palabras clave como <i>yesterday, last week, ago</i>.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                        <div class="bg-indigo-950 p-3 rounded-lg border border-cyan-500">
+                            <span class="text-cyan-300 font-bold">1. Verbos Regulares:</span>
+                            <p class="text-xs text-slate-300 mt-1">Solo agrega <b>-ed</b> al final.</p>
+                            <p class="text-xs text-yellow-300 mt-1">walk ➔ walked<br>play ➔ played</p>
+                        </div>
+                        <div class="bg-indigo-950 p-3 rounded-lg border border-cyan-500">
+                            <span class="text-pink-300 font-bold">2. Verbos Irregulares:</span>
+                            <p class="text-xs text-slate-300 mt-1">¡Cambian de forma! Hay que memorizarlos.</p>
+                            <p class="text-xs text-yellow-300 mt-1">go ➔ <b>went</b><br>see ➔ <b>saw</b><br>have ➔ <b>had</b></p>
+                        </div>
+                    </div>
+                `,
+                questions: [
+                    { q: "Yesterday, I ___ (visit) the forest of fairies.", options: ["visited", "visit", "visiting"], answer: "visited" },
+                    { q: "The magician ___ (go) to the potion shop last night.", options: ["went", "goed", "go"], answer: "went" },
+                    { q: "We ___ (see) a shining star 2 hours ago.", options: ["saw", "seed", "see"], answer: "saw" },
+                    { q: "She ___ (not defeat) the monster yesterday.", options: ["didn't defeat", "don't defeat", "not defeated"], answer: "didn't defeat" },
+                    { q: "___ you finish your magic homework?", options: ["Did", "Do", "Were"], answer: "Did" }
+                ]
+            },
+            4: {
+                title: "Natural Features & Accommodation",
+                icon: "🏔️",
+                subtitle: "Vocabulario de paisajes naturales y hospedaje",
+                theoryHTML: `
+                    <p class="mb-2">¡Aprende las palabras para describir el mundo y dónde descansar en tus viajes!</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🏔️ <b>Mountain:</b> Montaña</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🌊 <b>River:</b> Río</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🌲 <b>Forest:</b> Bosque</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🏞️ <b>Lake:</b> Lago</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🏝️ <b>Island:</b> Isla</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🏨 <b>Hotel:</b> Hotel</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">🪵 <b>Cabin:</b> Cabaña</div>
+                        <div class="bg-slate-900 p-2 rounded border border-emerald-500">⛺ <b>Campsite:</b> Campamento</div>
+                    </div>
+                `,
+                questions: [
+                    { q: "A piece of land surrounded by water is an ___.", options: ["Island", "Mountain", "River"], answer: "Island" },
+                    { q: "We stayed in a small wooden ___ in the forest.", options: ["Cabin", "Ocean", "Lake"], answer: "Cabin" },
+                    { q: "You put up a tent at a ___.", options: ["Campsite", "Hotel", "Island"], answer: "Campsite" },
+                    { q: "A large body of water surrounded by land is a ___.", options: ["Lake", "Forest", "Mountain"], answer: "Lake" },
+                    { q: "Mount Everest is the highest ___ in the world.", options: ["Mountain", "River", "Hostel"], answer: "Mountain" }
+                ]
+            },
+            5: {
+                title: "Weather Vocabulary",
+                icon: "⛈️",
+                subtitle: "Pronostica el clima y la temperatura",
+                theoryHTML: `
+                    <p class="mb-2">¿Cómo está el clima hoy? Aprende las palabras climáticas en inglés:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">☀️ <b>Sunny:</b> Soleado</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">🌧️ <b>Rainy:</b> Lluvioso</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">❄️ <b>Snowy:</b> Nevado</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">💨 <b>Windy:</b> Ventoso</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">☁️ <b>Cloudy:</b> Nublado</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">⚡ <b>Stormy:</b> Tormentoso</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">🔥 <b>Hot:</b> Caluroso</div>
+                        <div class="bg-slate-900 p-2 rounded border border-yellow-500">🥶 <b>Cold:</b> Frío</div>
+                    </div>
+                `,
+                questions: [
+                    { q: "Take an umbrella! It is very ___ outside.", options: ["Rainy", "Sunny", "Hot"], answer: "Rainy" },
+                    { q: "It is freezing cold and white flakes are falling. It is ___.", options: ["Snowy", "Windy", "Stormy"], answer: "Snowy" },
+                    { q: "The trees are moving a lot because it is very ___.", options: ["Windy", "Sunny", "Hot"], answer: "Windy" },
+                    { q: "You need sunglasses because it is bright and ___.", options: ["Sunny", "Rainy", "Cloudy"], answer: "Sunny" },
+                    { q: "Thunder and lightning happen when it is ___.", options: ["Stormy", "Cold", "Snowy"], answer: "Stormy" }
+                ]
+            }
+        };
+
+        const bossQuestions = [
+            { q: "Modal: Which sentence is correct for advice?", options: ["You should drink potion", "You musting drink potion", "You can to drink potion"], answer: "You should drink potion" },
+            { q: "Present Simple: He ___ magic every night.", options: ["studies", "study", "studying"], answer: "studies" },
+            { q: "Past Simple: Yesterday we ___ the evil spell.", options: ["broke", "breaked", "break"], answer: "broke" },
+            { q: "Vocabulary: A small house made of wood in the woods is a ___.", options: ["Cabin", "Island", "River"], answer: "Cabin" },
+            { q: "Weather: When there is lightning and heavy rain, it is ___.", options: ["Stormy", "Sunny", "Windy"], answer: "Stormy" }
+        ];
+
+    /* ==========================================================================
+       NAVEGACIÓN
+       ========================================================================== */
+    function showScreen(screenId) {
+        clearTimeout(pendingTimer); // evita que un temporizador viejo cambie la pantalla
+        playSound('click');
+        const screens = ['start-screen', 'map-screen', 'lesson-theory-screen', 'challenge-screen', 'boss-screen', 'victory-screen'];
+        screens.forEach(id => document.getElementById(id).classList.add('hidden'));
+        document.getElementById(screenId).classList.remove('hidden');
+        if (screenId === 'map-screen') updateMapBadges();
+        window.scrollTo({ top: 0 });
+    }
+
+    function selectAvatar(icon, name, btn) {
+        playSound('click');
+        gameState.playerAvatar = icon;
+        document.getElementById('hud-avatar-icon').textContent = icon;
+        document.getElementById('boss-hero-avatar').textContent = icon;
+        document.querySelectorAll('.avatar-opt').forEach(b => b.classList.remove('selected'));
+        if (btn) btn.classList.add('selected');
+    }
+
+    function startGame() {
+        const inputName = document.getElementById('name-input').value.trim();
+        if (inputName) {
+            gameState.playerName = inputName;
+            document.getElementById('player-name').textContent = inputName;
+            document.getElementById('boss-hero-name').textContent = inputName;
+        }
+        showScreen('map-screen');
+    }
+
+    function updateMapBadges() {
+        for (let i = 1; i <= 5; i++) {
+            const badgeEl = document.getElementById(`badge-${i}`);
+            if (gameState.completedLessons.includes(i)) {
+                badgeEl.textContent = "⭐ Completado";
+                badgeEl.className = "text-xs bg-emerald-950 text-emerald-400 px-2 py-1 rounded border border-emerald-500 font-bold";
+            } else if (gameState.unlockedLessons.includes(i)) {
+                badgeEl.textContent = "✨ Disponible";
+                badgeEl.className = "text-xs bg-purple-950 text-purple-300 px-2 py-1 rounded border border-purple-500";
+            } else {
+                badgeEl.textContent = "🔒 Bloqueado";
+                badgeEl.className = "text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700 font-mono";
+            }
+        }
+    }
+
+    /* ==========================================================================
+       FLUJO DE LECCIONES Y DESAFÍOS
+       ========================================================================== */
+    function startLesson(id) {
+        if (!gameState.unlockedLessons.includes(id)) {
+            playSound('wrong');
+            showToast('🔒 Completa el territorio anterior para desbloquear este.');
+            return;
+        }
+        gameState.currentLessonId = id;
+        const lesson = lessonsData[id];
+
+        document.getElementById('lesson-icon').textContent = lesson.icon;
+        document.getElementById('lesson-title').textContent = lesson.title;
+        document.getElementById('lesson-subtitle').textContent = lesson.subtitle;
+        document.getElementById('lesson-body').innerHTML = lesson.theoryHTML;
+        document.getElementById('lesson-body').scrollTop = 0;
+
+        showScreen('lesson-theory-screen');
+    }
+
+    function launchInteractiveChallenge() {
+        gameState.currentQuestionIdx = 0;
+        showScreen('challenge-screen');
+        showChallengeQuestion();
+    }
+
+    let answerLocked = false;
+
+    function showChallengeQuestion() {
+        answerLocked = false;
+        const lesson = lessonsData[gameState.currentLessonId];
+        const qData = lesson.questions[gameState.currentQuestionIdx];
+
+        document.getElementById('challenge-topic-icon').textContent = lesson.icon;
+        document.getElementById('challenge-topic-name').textContent = lesson.title;
+        document.getElementById('question-tracker').textContent = `Pregunta ${gameState.currentQuestionIdx + 1}/${lesson.questions.length}`;
+
+        document.getElementById('feedback-banner').classList.add('hidden');
+
+        const questionHTML = escapeHTML(qData.q).replace('___', '<span class="text-yellow-400 underline decoration-wavy">______</span>');
+
+        document.getElementById('challenge-content-area').innerHTML = `
+            <div class="text-center space-y-4">
+                <div class="text-xs text-yellow-400 font-mono">COMPLETA EL HECHIZO:</div>
+                <div class="text-lg sm:text-xl font-bold bg-slate-950 p-4 rounded-xl border border-indigo-900 text-pink-300">
+                    "${questionHTML}"
+                </div>
+                <div id="challenge-options" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2"></div>
+            </div>
+        `;
+
+        // Botones creados con listeners (sin onclick inline: evita romperse con apóstrofes como "don't")
+        const grid = document.getElementById('challenge-options');
+        shuffle(qData.options).forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'pixel-card bg-slate-900 border-2 border-indigo-500 hover:border-pink-400 p-4 rounded-xl text-center font-bold text-slate-100 hover:bg-slate-800 transition text-sm sm:text-base';
+            btn.textContent = opt;
+            btn.addEventListener('click', () => checkAnswer(opt, qData.answer, btn));
+            grid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct, btn) {
+        if (answerLocked || btn.disabled) return;
+
+        const fb = document.getElementById('feedback-banner');
+        fb.classList.remove('hidden', 'bg-emerald-900/80', 'border-emerald-500', 'bg-red-900/80', 'border-red-500', 'text-emerald-200', 'text-red-200');
+
+        if (selected === correct) {
+            answerLocked = true; // evita doble clic (saltaba preguntas y sumaba XP doble)
+            document.querySelectorAll('#challenge-options button').forEach(b => { b.disabled = true; });
+            btn.classList.add('opt-correct');
+
+            playSound('correct');
+            createParticles();
+            fb.classList.add('bg-emerald-900/80', 'border-emerald-500', 'text-emerald-200');
+            fb.textContent = '✨ ¡EXCELENTE! Hechizo pronunciado correctamente. +20 XP';
+
+            addXP(20);
+            gameState.score += 50;
+            document.getElementById('score-val').textContent = gameState.score;
+
+            later(() => {
+                gameState.currentQuestionIdx++;
+                const lesson = lessonsData[gameState.currentLessonId];
+                if (gameState.currentQuestionIdx < lesson.questions.length) {
+                    showChallengeQuestion();
+                } else {
+                    finishLesson();
+                }
+            }, 1200);
+
+        } else {
+            btn.disabled = true;
+            btn.classList.add('opt-wrong');
+            playSound('wrong');
+            fb.classList.add('bg-red-900/80', 'border-red-500', 'text-red-200');
+            fb.textContent = '❌ ¡Casi! Inténtalo con otra opción.';
+            loseLife();
+        }
+    }
+
+    function finishLesson() {
+        playSound('win');
+        const id = gameState.currentLessonId;
+        if (!gameState.completedLessons.includes(id)) {
+            gameState.completedLessons.push(id);
+        }
+        if (id < 5 && !gameState.unlockedLessons.includes(id + 1)) {
+            gameState.unlockedLessons.push(id + 1);
+        }
+
+        document.getElementById('earned-xp').textContent = '+100 XP';
+        document.getElementById('earned-badge').textContent = lessonsData[id].icon;
+        document.getElementById('victory-message').textContent = `¡Felicidades! Has completado el territorio de "${lessonsData[id].title}".`;
+        showScreen('victory-screen');
+    }
+
+    /* ==========================================================================
+       BATALLA FINAL
+       ========================================================================== */
+    let bossQueue = [];
+    let bossCurrent = null;
+    let bossLocked = false;
+
+    function startBossFight() {
+        // Requiere haber completado las 5 lecciones (quita este bloque si quieres acceso libre)
+        if (gameState.completedLessons.length < 5) {
+            playSound('wrong');
+            showToast('🐉 Completa los 5 territorios antes de enfrentar al dragón.');
+            return;
+        }
+        bossQueue = shuffle(bossQuestions);
+        gameState.bossHp = 100;
+        gameState.heroHp = 100;
+        updateBossBars();
+        showScreen('boss-screen');
+        loadBossQuestion();
+    }
+
+    function updateBossBars() {
+        document.getElementById('boss-hp-bar').style.width = `${gameState.bossHp}%`;
+        document.getElementById('hero-hp-bar').style.width = `${gameState.heroHp}%`;
+    }
+
+    function loadBossQuestion() {
+        // La victoria depende de la vida del dragón, no del número de preguntas
+        if (gameState.bossHp <= 0) {
+            playSound('win');
+            document.getElementById('earned-xp').textContent = '+300 XP';
+            document.getElementById('earned-badge').textContent = '👑🏆';
+            document.getElementById('victory-message').textContent = '¡INCREÍBLE! Has derrotado al Dragón del Olvido y rescatado el Reino del Inglés.';
+            addXP(300);
+            showScreen('victory-screen');
+            return;
+        }
+
+        if (bossQueue.length === 0) bossQueue = shuffle(bossQuestions);
+        bossLocked = false;
+        bossCurrent = bossQueue.shift();
+
+        document.getElementById('boss-question-text').textContent = bossCurrent.q;
+
+        const grid = document.getElementById('boss-options-grid');
+        grid.innerHTML = '';
+        shuffle(bossCurrent.options).forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'pixel-btn-cyan py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-center';
+            btn.textContent = opt;
+            btn.addEventListener('click', () => handleBossAnswer(opt, bossCurrent.answer, btn));
+            grid.appendChild(btn);
+        });
+    }
+
+    function handleBossAnswer(selected, correct, btn) {
+        if (bossLocked) return;
+        bossLocked = true;
+
+        if (selected === correct) {
+            btn.classList.add('opt-correct');
+            playSound('correct');
+            createParticles();
+            gameState.bossHp = Math.max(0, gameState.bossHp - 20);
+            updateBossBars();
+            later(loadBossQuestion, 800);
+        } else {
+            btn.classList.add('opt-wrong');
+            playSound('wrong');
+            gameState.heroHp = Math.max(0, gameState.heroHp - 20);
+            updateBossBars();
+            bossQueue.push(bossCurrent); // la pregunta fallada vuelve más tarde
+
+            if (gameState.heroHp <= 0) {
+                later(() => {
+                    alert("¡El Dragón te ha vencido! Recarga tu energía e inténtalo de nuevo.");
+                    showScreen('map-screen');
+                }, 500);
+            } else {
+                later(loadBossQuestion, 800);
+            }
+        }
+    }
+
+    /* ==========================================================================
+       XP, VIDAS Y EFECTOS
+       ========================================================================== */
+    function addXP(amount) {
+        gameState.xp += amount;
+        while (gameState.xp >= gameState.xpToNext) { // soporta subir varios niveles de golpe
+            gameState.xp -= gameState.xpToNext;
+            gameState.level++;
+        }
+        document.getElementById('player-lvl').textContent = gameState.level;
+        const pct = Math.min(100, (gameState.xp / gameState.xpToNext) * 100);
+        document.getElementById('xp-bar').style.width = `${pct}%`;
+        document.getElementById('xp-text').textContent = `${gameState.xp} / ${gameState.xpToNext} XP`;
+    }
+
+    function loseLife() {
+        if (gameState.lives > 1) {
+            gameState.lives--;
+            renderHearts();
+        } else {
+            gameState.lives = 3;
+            renderHearts();
+            alert("¡Te has quedado sin vidas mágicas! Reintentando el desafío...");
+            showScreen('map-screen');
+        }
+    }
+
+    function renderHearts() {
+        const container = document.getElementById('hearts-container');
+        container.innerHTML = '';
+        for (let i = 0; i < gameState.lives; i++) {
+            container.insertAdjacentHTML('beforeend', `<i class="fa-solid fa-heart text-red-500 text-lg sm:text-xl animate-pulse"></i>`);
+        }
+    }
+
+    function createParticles() {
+        const colors = ['#ec4899', '#06b6d4', '#f59e0b', '#a855f7'];
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 8 + 4;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.borderRadius = '50%';
+            particle.style.setProperty('--dx', `${(Math.random() - 0.5) * 200}px`);
+            particle.style.setProperty('--dy', `${(Math.random() - 0.5) * 200}px`);
+            particle.style.left = '50%';
+            particle.style.top = '50%';
+            particle.style.zIndex = '90';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 800);
+        }
+    }
+
+    function openAvatarSelector() {
+        showScreen('start-screen');
+    }
+
+    // Inicializar HUD
+    renderHearts();
+    updateMapBadges();
+    </script>
+</body>
+</html>
